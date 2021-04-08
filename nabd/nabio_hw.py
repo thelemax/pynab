@@ -1,15 +1,14 @@
 import asyncio
 import time
-
-from .button_gpio import ButtonGPIO
+import logging
+from .button_custom import ButtonCustom
 from .ears import Ears
-from .ears_dev import EarsDev
-from .rfid_dev import RfidDev
+from .ears_custom import EarsCustom
+#from .rfid_custom import RfidCustom
 from .leds import Led
-from .leds_neopixel import LedsNeoPixel
+from .leds_apa102 import LedsAPA102
 from .nabio import NabIO
-from .sound_alsa import SoundAlsa
-
+from .sound_custom import SoundCustom
 
 class NabIOHW(NabIO):
     """
@@ -19,24 +18,29 @@ class NabIOHW(NabIO):
     def __init__(self):
         super().__init__()
         self.model = NabIOHW.detect_model()
-        self.leds = LedsNeoPixel()
-        self.ears = EarsDev()
-        self.rfid = RfidDev()
-        self.sound = SoundAlsa(self.model)
-        self.button = ButtonGPIO(self.model)
+        self.leds = LedsAPA102()
+        self.ears = EarsCustom()
+        self.rfid = None #RfidCustom()
+        self.sound = SoundCustom(self.model)
+        self.button = ButtonCustom(self.model)
+        logging.debug("NABIO HW - init")
 
     async def setup_ears(self, left_ear, right_ear):
+        logging.debug("NABIO HW - setup_ears {a} {b}".format(a=left_ear, b=right_ear))
         await self.ears.reset_ears(left_ear, right_ear)
 
     async def move_ears(self, left_ear, right_ear):
+        logging.debug("NABIO HW - move_ears {a} {b}".format(a=left_ear, b=right_ear))
         await self.ears.go(Ears.LEFT_EAR, left_ear, Ears.FORWARD_DIRECTION)
         await self.ears.go(Ears.RIGHT_EAR, right_ear, Ears.FORWARD_DIRECTION)
         await self.ears.wait_while_running()
 
     async def detect_ears_positions(self):
+        logging.debug("NABIO HW - detect_ears_positions")
         return await self.ears.detect_positions()
 
     def set_leds(self, nose, left, center, right, bottom):
+        logging.debug("NABIO HW - set_leds {a} {b} {c} {d} {e}".format(a=nose, b=left, c=center, d=right, e=bottom))
         for (led_ix, led) in [
             (Led.NOSE, nose),
             (Led.LEFT, left),
@@ -51,22 +55,28 @@ class NabIOHW(NabIO):
             self.leds.set1(led_ix, r, g, b)
 
     def pulse(self, led_ix, color):
+        logging.debug("NABIO HW - pulse {a} {b}".format(a=led_ix, b=color))
         (r, g, b) = color
         self.leds.pulse(led_ix, r, g, b)
 
     def rfid_awaiting_feedback(self):
+        logging.debug("NABIO HW - rfid_awaiting_feedback")
         self.leds.set1(Led.NOSE, 255, 0, 0)
 
     def bind_button_event(self, loop, callback):
+        logging.debug("NABIO HW - bind_button_event  {a} {b}".format(a=loop, b=callback))
         self.button.on_event(loop, callback)
 
     def bind_ears_event(self, loop, callback):
+        logging.debug("NABIO HW - bind_ears_event  {a} {b}".format(a=loop, b=callback))
         self.ears.on_move(loop, callback)
 
     def bind_rfid_event(self, loop, callback):
-        self.rfid.on_detect(loop, callback)
+        logging.debug("NABIO HW - bind_rfid_event  {a} {b}".format(a=loop, b=callback))
+        #self.rfid.on_detect(loop, callback)
 
     async def play_info(self, condvar, tempo, colors):
+        logging.debug("NABIO HW - set_leds {a} {b} {c}".format(a=condvar, b=tempo, c=colors))
         animation = [NabIOHW._convert_info_color(color) for color in colors]
         step_ms = tempo * 10
         start = time.time()
@@ -86,11 +96,13 @@ class NabIOHW(NabIO):
         return notified
 
     def clear_info(self):
+        logging.debug("NABIO HW - clear_info")
         for led in (Led.LEFT, Led.CENTER, Led.RIGHT):
             self.leds.set1(led, 0, 0, 0)
 
     @staticmethod
     async def _wait_on_condvar(condvar, ms):
+        logging.debug("NABIO HW - _wait_on_condvar {a} {b}".format(a=condvar, b=ms))
         timeout = False
         try:
             await asyncio.wait_for(condvar.wait(), ms / 1000)
@@ -100,6 +112,8 @@ class NabIOHW(NabIO):
 
     @staticmethod
     def _convert_info_color(color):
+        logging.debug("NABIO HW - _convert_info_color {a}".format(a=color))
+
         animation = []
         for led_ix, led in [
             (Led.LEFT, "left"),
@@ -120,12 +134,15 @@ class NabIOHW(NabIO):
         return animation
 
     def has_sound_input(self):
+        logging.debug("NABIO HW - has_sound_input")
         return self.model != NabIOHW.MODEL_2018
 
     def has_rfid(self):
+        logging.debug("NABIO HW - has_rfid")
         return self.model == NabIOHW.MODEL_2019_TAGTAG
 
     async def gestalt(self):
+        logging.debug("NABIO HW - gestalt")
         MODEL_NAMES = {
             NabIO.MODEL_2018: "2018",
             NabIO.MODEL_2019_TAG: "2019_TAG",
@@ -160,6 +177,7 @@ class NabIOHW(NabIO):
         }
 
     async def test(self, test):
+        logging.debug("NABIO HW - test")
         if test == "ears":
             (
                 left_ear_position,
@@ -224,12 +242,14 @@ class NabIOHW(NabIO):
 
     @staticmethod
     def detect_model():
-        _, sound_configuration, _, = SoundAlsa.sound_configuration()
+        logging.debug("NABIO HW - detect_model");
+        return NabIO.MODEL_CUSTOM
+ #       _, sound_configuration, _, = SoundAlsa.sound_configuration()
 
-        if sound_configuration == SoundAlsa.MODEL_2019_CARD_NAME:
-            if RfidDev.is_available():
-                return NabIO.MODEL_2019_TAGTAG
-            else:
-                return NabIO.MODEL_2019_TAG
-        if sound_configuration == SoundAlsa.MODEL_2018_CARD_NAME:
-            return NabIO.MODEL_2018
+ #       if sound_configuration == SoundAlsa.MODEL_2019_CARD_NAME:
+ #           if RfidDev.is_available():
+#                return NabIO.MODEL_2019_TAGTAG
+ #           else:
+ #               return NabIO.MODEL_2019_TAG
+ #       if sound_configuration == SoundAlsa.MODEL_2018_CARD_NAME:
+#        return NabIO.MODEL_CUSTOM

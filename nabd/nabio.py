@@ -15,6 +15,9 @@ class NabIO(object, metaclass=abc.ABCMeta):
     # with RFID
     MODEL_2019_TAGTAG = 3
 
+    #Model Thelemax
+    MODEL_CUSTOM = 4
+
     # Each info loop lasts 15 seconds
     INFO_LOOP_LENGTH = 15.0
 

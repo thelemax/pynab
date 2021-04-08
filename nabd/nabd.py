@@ -69,12 +69,12 @@ class Nabd:
         Nabd.leds_boot(self.nabio, 2)
         if self.nabio.has_sound_input():
             from . import i18n
-            from .asr import ASR
+            #from .asr import ASR
             from .nlu import NLU
 
             config = i18n.Config.load()
-            self._asr_locale = ASR.get_locale(config.locale)
-            self.asr = ASR(self._asr_locale)
+            #self._asr_locale = ASR.get_locale(config.locale)
+            #self.asr = ASR(self._asr_locale)
             Nabd.leds_boot(self.nabio, 3)
             self._nlu_locale = NLU.get_locale(config.locale)
             self.nlu = NLU(self._nlu_locale)
