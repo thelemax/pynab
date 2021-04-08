@@ -1,19 +1,17 @@
 # Nabaztag en Python pour Raspberry Pi
 
-[![Build Status](https://travis-ci.org/nabaztag2018/pynab.svg?branch=master)](https://travis-ci.org/nabaztag2018/pynab)
-![Tests](https://github.com/nabaztag2018/pynab/workflows/Tests/badge.svg)
+[![Build Status](https://travis-ci.org/thelemax/pynab.svg?branch=master)](https://travis-ci.org/thelemax/pynab)
+![Tests](https://github.com/thelemax/pynab/workflows/Tests/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/nabaztag2018/pynab.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/nabaztag2018/pynab/alerts/)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/nabaztag2018/pynab.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/nabaztag2018/pynab/context:python)
-[![codecov](https://codecov.io/gh/nabaztag2018/pynab/branch/master/graph/badge.svg)](https://codecov.io/gh/nabaztag2018/pynab)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/thelemax/pynab.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/thelemax/pynab/alerts/)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/thelemax/pynab.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/thelemax/pynab/context:python)
+[![codecov](https://codecov.io/gh/thelemax/pynab/branch/master/graph/badge.svg)](https://codecov.io/gh/thelemax/pynab)
 
 # Cartes
 
-Ce système est conçu pour deux cartes :
-- Une carte réalisée pour Maker Faire 2018, qui ne fonctionne qu'avec les Nabaztag v1 (sans micro ni RFID).
-- Une nouvelle version de la carte, proposée via la campagne Ulule en mai 2019, qui fonctionne avec les Nabaztag v1 et v2 (les micros sont sur la carte, du coup les Nabaztag v1 bénéficient aussi de la reconnaissance vocale).
+Ce système est conçu pour le Nabaztag v1. Ce projet est un fork de nabaztag2018/pynab et a vocation uniquement de refaire fonctionner un Nabaztag v1 avec un minimum de composant nécessaire. Toutes les fonctionnalités qu'offre le projet de base ne seront pas en place, notamment la gestion de position des oreille.
 
-Les schémas et fichiers de fabrication de ces deux cartes sont dans le repository [hardware](https://github.com/nabaztag2018/hardware), respectivement [`RPI_Nabaztag`](https://github.com/nabaztag2018/hardware/blob/master/RPI_Nabaztag.PDF) (2018) et [`tagtagtag_V2.0`](https://github.com/nabaztag2018/hardware/tree/master/tagtagtag_V2.0) (2019).
+Les schémas et fichiers de fabrication son à venir.
 
 # Images
 
@@ -33,19 +31,10 @@ sudo apt update
 sudo apt upgrade
 ```
 
-1. Configurer la carte son, les oreilles et le lecteur RFID et redémarrer.
+1. Configurer la carte son.
 
-Maker Faire 2018 :
-https://support.hifiberry.com/hc/en-us/articles/205377651-Configuring-Linux-4-x-or-higher
-
-Ulule 2019 :
 https://github.com/pguyot/wm8960/tree/tagtagtag-sound
 
-Les deux cartes :
-https://github.com/pguyot/tagtagtag-ears
-
-Nabaztag:tag uniquement (non requis sur les Nabaztag, mais installé par les mises à jour)
-https://github.com/pguyot/cr14
 
 2. Installer PostgreSQL et les paquets requis
 
@@ -56,7 +45,7 @@ sudo apt-get install postgresql libpq-dev git python3 python3-venv python3-dev g
 3. Récupérer le code
 
 ```
-git clone https://github.com/nabaztag2018/pynab.git
+git clone https://github.com/thelemax/pynab.git
 cd pynab
 ```
 
@@ -64,12 +53,6 @@ cd pynab
 
 ```
 bash install.sh
-```
-
-ou, pour les cartes Maker Faire 2018 :
-
-```
-bash install.sh --makerfaire2018
 ```
 
 # Mise à jour
