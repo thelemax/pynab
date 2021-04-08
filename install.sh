@@ -17,21 +17,12 @@ test=0
 # upgrade : this script is invoked from upgrade.sh, typically from the button in the web interface.
 upgrade=0
 
-if [ "${1:-}" == "--makerfaire2018" ]; then
-  makerfaire2018=1
-  shift
-fi
-
 if [ "${1:-}" == "travis-chroot" ]; then
   travis_chroot=1
 elif [ "${1:-}" == "test" ]; then
   test=1
 elif [ "${1:-}" == "--upgrade" ]; then
   upgrade=1
-  # auto-detect maker faire card here.
-  if [ `aplay -L | grep -c "hifiberry"` -gt 0 ]; then
-    makerfaire2018=1
-  fi
 fi
 
 if [ "`uname -s -m`" != 'Linux armv6l' ]; then
@@ -48,24 +39,12 @@ cd `dirname "$0"`
 root_dir=`pwd`
 owner=`stat -c '%U' ${root_dir}`
 
-if [ $travis_chroot -eq 0 -a $makerfaire2018 -eq 0 -a `aplay -L | grep -c "tagtagtagsound"` -eq 0 ]; then
-  if [ `aplay -L | grep -c "hifiberry"` -gt 0 ]; then
-    echo "Judging from the sound card, this looks likes a Paris Maker Faire 2018 card."
-    echo "Please double-check and restart this script with --makerfaire2018"
-  else
-    echo "Please install and configure sound card driver https://github.com/pguyot/wm8960/tree/tagtagtag-sound"
-  fi
+if [ $travis_chroot -eq 0 -a `aplay -L | grep -c "tagtagtagsound"` -eq 0 ]; then
+  echo "Please install and configure sound card driver https://github.com/pguyot/wm8960/tree/tagtagtag-sound"
   exit 1
 fi
 
-if [ $makerfaire2018 -eq 1 ]; then
-  if [ `aplay -L | grep -c "hifiberry"` -eq 0 ]; then
-    echo "Please install and configure sound card driver https://support.hifiberry.com/hc/en-us/articles/205377651-Configuring-Linux-4-x-or-higher"
-    exit 1
-  fi
-fi
-
-if [ $upgrade -eq 1 -a $makerfaire2018 -eq 0 -a -d /home/pi/wm8960 ]; then
+if [ $upgrade -eq 1 -a -d /home/pi/wm8960 ]; then
   echo "Updating sound driver - 2/14" > /tmp/pynab.upgrade
   cd /home/pi/wm8960
   sudo chown -R ${owner} .git
@@ -73,54 +52,6 @@ if [ $upgrade -eq 1 -a $makerfaire2018 -eq 0 -a -d /home/pi/wm8960 ]; then
   if [ "$pull" != "Already up to date." ]; then
     make && sudo make install
     sudo touch /tmp/pynab.upgrade.reboot
-  fi
-fi
-
-if [ $upgrade -eq 1 ]; then
-  echo "Updating ears driver - 3/14" > /tmp/pynab.upgrade
-  if [ -d /home/pi/tagtagtag-ears ]; then
-    cd /home/pi/tagtagtag-ears
-    sudo chown -R ${owner} .git
-    pull=`git pull`
-    if [ "$pull" != "Already up to date." ]; then
-      make && sudo make install
-      sudo touch /tmp/pynab.upgrade.reboot
-    fi
-  else
-    cd /home/pi
-    git clone https://github.com/pguyot/tagtagtag-ears
-    cd tagtagtag-ears
-    make && sudo make install
-    sudo touch /tmp/pynab.upgrade.reboot
-  fi
-else
-  if [ $travis_chroot -eq 0 -a ! -e "/dev/ear0" ]; then
-    echo "Please install ears driver https://github.com/pguyot/tagtagtag-ears"
-    exit 1
-  fi
-fi
-
-if [ $upgrade -eq 1 ]; then
-  echo "Updating RFID driver - 4/14" > /tmp/pynab.upgrade
-  if [ -d /home/pi/cr14 ]; then
-    cd /home/pi/cr14
-    sudo chown -R ${owner} .git
-    pull=`git pull`
-    if [ "$pull" != "Already up to date." ]; then
-      make && sudo make install
-      sudo touch /tmp/pynab.upgrade.reboot
-    fi
-  else
-    cd /home/pi
-    git clone https://github.com/pguyot/cr14
-    cd cr14
-    make && sudo make install
-    sudo touch /tmp/pynab.upgrade.reboot
-  fi
-else
-  if [ $travis_chroot -eq 0 -a ! -e "/dev/rfid0" ]; then
-    echo "Please install cr14 RFID driver https://github.com/pguyot/cr14"
-    exit 1
   fi
 fi
 
@@ -142,29 +73,27 @@ else
   fi
 fi
 
-if [ $makerfaire2018 -eq 0 ]; then
-  if [ $upgrade -eq 1 ]; then
-    echo "Updating ASR models - 6/14" > /tmp/pynab.upgrade
-  fi
+if [ $upgrade -eq 1 ]; then
+  echo "Updating ASR models - 6/14" > /tmp/pynab.upgrade
+fi
 
-  # maker faire card has no mic, no need to install kaldi
-  if [ ! -d "/opt/kaldi" ]; then
-    echo "Installing precompiled kaldi into /opt"
-    wget -O - -q https://github.com/pguyot/kaldi/releases/download/v5.4.1/kaldi-c3260f2-linux_armv6l-vfp.tar.xz | sudo tar xJ -C /
-    sudo ldconfig
-  fi
+# maker faire card has no mic, no need to install kaldi
+if [ ! -d "/opt/kaldi" ]; then
+  echo "Installing precompiled kaldi into /opt"
+  wget -O - -q https://github.com/pguyot/kaldi/releases/download/v5.4.1/kaldi-c3260f2-linux_armv6l-vfp.tar.xz | sudo tar xJ -C /
+  sudo ldconfig
+fi
 
-  sudo mkdir -p "/opt/kaldi/model"
+sudo mkdir -p "/opt/kaldi/model"
 
-  if [ ! -d "/opt/kaldi/model/kaldi-nabaztag-en-adapt-r20191222" ]; then
-    echo "Uncompressing kaldi model for English"
-    sudo tar xJf /home/pi/pynab/asr/kaldi-nabaztag-en-adapt-r20191222.tar.xz -C /opt/kaldi/model/
-  fi
+if [ ! -d "/opt/kaldi/model/kaldi-nabaztag-en-adapt-r20191222" ]; then
+  echo "Uncompressing kaldi model for English"
+  sudo tar xJf /home/pi/pynab/asr/kaldi-nabaztag-en-adapt-r20191222.tar.xz -C /opt/kaldi/model/
+fi
 
-  if [ ! -d "/opt/kaldi/model/kaldi-nabaztag-fr-adapt-r20200203" ]; then
-    echo "Uncompressing kaldi model for French"
-    sudo tar xJf /home/pi/pynab/asr/kaldi-nabaztag-fr-adapt-r20200203.tar.xz -C /opt/kaldi/model/
-  fi
+if [ ! -d "/opt/kaldi/model/kaldi-nabaztag-fr-adapt-r20200203" ]; then
+  echo "Uncompressing kaldi model for French"
+  sudo tar xJf /home/pi/pynab/asr/kaldi-nabaztag-fr-adapt-r20200203.tar.xz -C /opt/kaldi/model/
 fi
 
 cd $root_dir
@@ -187,37 +116,35 @@ venv/bin/pip uninstall -y meteofrance #remove old meteofrance API
 venv/bin/pip install wheel
 venv/bin/pip install -r requirements.txt
 
-if [ $makerfaire2018 -eq 0 ]; then
-  if [ $upgrade -eq 1 ]; then
-    echo "Updating NLU models - 8/14" > /tmp/pynab.upgrade
-  fi
-
-  # maker faire card has no mic, no need to install snips
-  if [ ! -d "venv/lib/python3.7/site-packages/snips_nlu_fr" ]; then
-    echo "Downloading snips_nlu models for French"
-    venv/bin/python -m snips_nlu download fr
-  fi
-
-  if [ ! -d "venv/lib/python3.7/site-packages/snips_nlu_en" ]; then
-    echo "Downloading snips_nlu models for English"
-    venv/bin/python -m snips_nlu download en
-  fi
-
-  echo "Compiling snips datasets"
-  mkdir -p nabd/nlu
-  venv/bin/python -m snips_nlu generate-dataset en */nlu/intent_en.yaml > nabd/nlu/nlu_dataset_en.json
-  venv/bin/python -m snips_nlu generate-dataset fr */nlu/intent_fr.yaml > nabd/nlu/nlu_dataset_fr.json
-
-  echo "Persisting snips engines"
-  if [ -d nabd/nlu/engine_en ]; then
-    rm -rf nabd/nlu/engine_en
-  fi
-  venv/bin/snips-nlu train nabd/nlu/nlu_dataset_en.json nabd/nlu/engine_en
-  if [ -d nabd/nlu/engine_fr ]; then
-    rm -rf nabd/nlu/engine_fr
-  fi
-  venv/bin/snips-nlu train nabd/nlu/nlu_dataset_fr.json nabd/nlu/engine_fr
+if [ $upgrade -eq 1 ]; then
+  echo "Updating NLU models - 8/14" > /tmp/pynab.upgrade
 fi
+
+# maker faire card has no mic, no need to install snips
+if [ ! -d "venv/lib/python3.7/site-packages/snips_nlu_fr" ]; then
+  echo "Downloading snips_nlu models for French"
+  venv/bin/python -m snips_nlu download fr
+fi
+
+if [ ! -d "venv/lib/python3.7/site-packages/snips_nlu_en" ]; then
+  echo "Downloading snips_nlu models for English"
+  venv/bin/python -m snips_nlu download en
+fi
+
+echo "Compiling snips datasets"
+mkdir -p nabd/nlu
+venv/bin/python -m snips_nlu generate-dataset en */nlu/intent_en.yaml > nabd/nlu/nlu_dataset_en.json
+venv/bin/python -m snips_nlu generate-dataset fr */nlu/intent_fr.yaml > nabd/nlu/nlu_dataset_fr.json
+
+echo "Persisting snips engines"
+if [ -d nabd/nlu/engine_en ]; then
+  rm -rf nabd/nlu/engine_en
+fi
+venv/bin/snips-nlu train nabd/nlu/nlu_dataset_en.json nabd/nlu/engine_en
+if [ -d nabd/nlu/engine_fr ]; then
+  rm -rf nabd/nlu/engine_fr
+fi
+venv/bin/snips-nlu train nabd/nlu/nlu_dataset_fr.json nabd/nlu/engine_fr
 
 trust=`sudo grep local /etc/postgresql/*/main/pg_hba.conf | grep -cE '^local +all +all +trust' || echo -n ''`
 if [ $trust -ne 1 ]; then
