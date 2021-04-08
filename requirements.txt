@@ -35,6 +35,18 @@ https://files.pythonhosted.org/packages/b4/e6/f33077deb4aa1d4b79cb392887bc1de4fd
 https://github.com/pguyot/snips-nlu/releases/download/0.19.7/scipy-1.4.0-cp37-cp37m-linux_armv6l.whl; sys_platform == 'linux' and 'armv6l' in platform_machine and python_version == '3.7'
 scipy==1.4.0; sys_platform != 'linux' or 'armv6l' not in platform_machine or python_version != '3.7'
 
+#dependency apa102
+spidev==3.5
+Adafruit-Blinka==6.4.2
+Adafruit-PlatformDetect==3.5.0
+Adafruit-PureIO==1.1.8
+RPi.GPIO==0.7.0
+adafruit-circuitpython-bitbangio==1.2.4
+adafruit-circuitpython-busdevice==5.0.6
+pyftdi==0.52.9
+pyserial==3.5
+pyusb==1.1.1
+
 # Indirect frozen dependencies
 apipkg==1.5
 appdirs==1.4.3
