@@ -1,4 +1,4 @@
-# Nabaztag en Python pour Raspberry Pi
+# Nabaztag v1 en Python pour Raspberry Pi
 
 [![Build Status](https://travis-ci.org/thelemax/pynab.svg?branch=master)](https://travis-ci.org/thelemax/pynab)
 ![Tests](https://github.com/thelemax/pynab/workflows/Tests/badge.svg)
