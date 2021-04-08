@@ -53,9 +53,16 @@ then
 fi
 cat /boot/config.txt | grep "dtparam=audio=on"
 
-echo "Enabling DAC for Maker Faire 2018 cards"
-echo "dtoverlay=hifiberry-dac" >> /boot/config.txt
-cat /boot/config.txt | grep "dtoverlay=hifiberry-dac"
+#echo "Enabling DAC for Maker Faire 2018 cards"
+#echo "dtoverlay=hifiberry-dac" >> /boot/config.txt
+#cat /boot/config.txt | grep "dtoverlay=hifiberry-dac"
+
+echo "Activer le SPI"
+if grep -q "dtparam=spi=on" /boot/config.txt
+then
+    sed -i "s/dtparam=spi=on/#dtparam=spi=on/" /boot/config.txt
+fi
+cat /boot/config.txt | grep "dtparam=spi=on"
 
 echo "Installing required packages"
 sudo apt update -y
@@ -70,19 +77,19 @@ cd /home/pi/wm8960
 make
 sudo make install
 
-echo "Installing ears driver"
-cd /home/pi
-sudo -u pi git clone https://github.com/pguyot/tagtagtag-ears
-cd /home/pi/tagtagtag-ears
-make
-sudo make install
+#echo "Installing ears driver"
+#cd /home/pi
+#sudo -u pi git clone https://github.com/pguyot/tagtagtag-ears
+#cd /home/pi/tagtagtag-ears
+#make
+#sudo make install
 
-echo "Installing cr14 driver"
-cd /home/pi
-sudo -u pi git clone https://github.com/pguyot/cr14
-cd /home/pi/cr14
-make
-sudo make install
+#echo "Installing cr14 driver"
+#cd /home/pi
+#sudo -u pi git clone https://github.com/pguyot/cr14
+#cd /home/pi/cr14
+#make
+#sudo make install
 
 branch=release
 if [ $TRAVIS_BRANCH = "releng" ]; then
@@ -90,7 +97,7 @@ if [ $TRAVIS_BRANCH = "releng" ]; then
 fi
 echo "Cloning pynab ${branch} branch"
 cd /home/pi
-sudo -u pi git clone -b ${branch} https://github.com/nabaztag2018/pynab.git
+sudo -u pi git clone -b ${branch} https://github.com/thelemax/pynab.git
 
 echo "Installing nabblockly"
 sudo apt-get install --no-install-recommends -y erlang
