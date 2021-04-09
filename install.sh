@@ -39,21 +39,21 @@ cd `dirname "$0"`
 root_dir=`pwd`
 owner=`stat -c '%U' ${root_dir}`
 
-if [ $travis_chroot -eq 0 -a `aplay -L | grep -c "tagtagtagsound"` -eq 0 ]; then
-  echo "Please install and configure sound card driver https://github.com/pguyot/wm8960/tree/tagtagtag-sound"
-  exit 1
-fi
+#if [ $travis_chroot -eq 0 -a `aplay -L | grep -c "tagtagtagsound"` -eq 0 ]; then
+#  echo "Please install and configure sound card driver https://github.com/pguyot/wm8960/tree/tagtagtag-sound"
+#  exit 1
+#fi
 
-if [ $upgrade -eq 1 -a -d /home/pi/wm8960 ]; then
-  echo "Updating sound driver - 2/14" > /tmp/pynab.upgrade
-  cd /home/pi/wm8960
-  sudo chown -R ${owner} .git
-  pull=`git pull`
-  if [ "$pull" != "Already up to date." ]; then
-    make && sudo make install
-    sudo touch /tmp/pynab.upgrade.reboot
-  fi
-fi
+#if [ $upgrade -eq 1 -a -d /home/pi/wm8960 ]; then
+#  echo "Updating sound driver - 2/14" > /tmp/pynab.upgrade
+#  cd /home/pi/wm8960
+#  sudo chown -R ${owner} .git
+#  pull=`git pull`
+#  if [ "$pull" != "Already up to date." ]; then
+#    make && sudo make install
+#    sudo touch /tmp/pynab.upgrade.reboot
+#  fi
+#fi
 
 if [ $upgrade -eq 1 ]; then
   echo "Updating nabblockly - 5/14" > /tmp/pynab.upgrade
